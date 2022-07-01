@@ -39,6 +39,7 @@ Improvements to inference speed The first effort, converting the model to TFLite
 the optimal value for the minimum face size parameter, A smaller minimum can detect people further away, but that also means it has to scan the image more times. In a 1280x720 image, there are 733,401 possible 100x100 boxes, 731,600 possible 101x101 boxes, etc. Viola-Jones does not check all of them, but the point is, there is a huge benefit if you have a tight minimum bound on the face size. 
 I estimated the dimensions of a face to be 0.2x0.25 m based on a rough measurement of my head. This means the bounding box for a head at one meter should be 212x198 pixels. Since the neural net input is a 48x48 pixel image, this is more resolution than needed to get good results. The image can be compressed by a factor of 4 in each dimension before running the cascade classifier which resulted in the increase of our FPS. We tried 3 different models: For the first model where we used custom model we achieved 5,700,000 parameters, 67 percent accuracy, and 2.3-2.4 FPS. 
 For the second one where we used mini-Xception model without pruning, we achieved 58000 parameters, 64.5 accuracy, and 13-15 FPS which is observable. For the third one where used mini-Xception model with pruning we achieved 30000 parameters, 63 accuracy, and 14.5-16 FPS which is observable
+
 ![image](https://user-images.githubusercontent.com/32436413/176880547-674de1f3-4b63-4d19-907a-9b66d469e9d4.png)
 ![image](https://user-images.githubusercontent.com/32436413/176880583-2cb7580c-26c9-454d-b0d2-30fa082cd8ef.png)
 ![image](https://user-images.githubusercontent.com/32436413/176880627-91a04430-c822-4803-af35-0f184daf0a52.png)
@@ -46,6 +47,7 @@ For the second one where we used mini-Xception model without pruning, we achieve
 **Connection** 
 
 We used a publisher on the raspberry side to transfer the emotions from model to the client, there would be a subscriber for receiving the emotions for multiple users. We have 2 subscriber 1 for detecting 1 face and another for detectiong multiple faces (Fig 10) The reason we chose MQTT was regarding sending multiple messages at high speed at the same time.
+
 ![image](https://user-images.githubusercontent.com/32436413/176880761-3810ce82-63bb-4a9a-9034-1f4c2a648cde.png)
 ![image](https://user-images.githubusercontent.com/32436413/176880792-87e1a480-e11b-4b6f-a4ac-d9a2e3db067d.png)
 
