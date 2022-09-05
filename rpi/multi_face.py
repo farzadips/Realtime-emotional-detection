@@ -51,3 +51,56 @@ one_time_sender = True
 fixed_previous = -20
 emo_state = 0
 multi_time = time.time()
+for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+    
+    start_time = time.time()
+    # t1 = cv2.getTickCount()
+
+    # Acquire frame and expand frame dimensions to have shape: [1, None, None, 3]
+    # i.e. a single-column array, where each item in the column has the pixel RGB value
+    frame = np.copy(frame1.array)
+    frame.setflags(write=1)
+    frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    roi_gray = frame_gray
+    faces = faceCascade.detectMultiScale(
+        frame_gray,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(50, 50),
+        flags=cv2.CASCADE_SCALE_IMAGE
+        )
+
+    interpreter = tflite.Interpreter(model_path="tflites/" + args.model + ".tflite")
+    interpreter.allocate_tensors()
+
+    # Get input and output tensors.
+    input_details = interpreter.get_input_details()
+    
+    output_details = interpreter.get_output_details()
+    count = 0
+
+    for (x, y, w, h) in faces:
+        count+=1
+        cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 3)
+        box_size = max(h, w)
+        roi_gray = frame_gray[y:y+box_size, x:x+box_size]
+        roi_color = frame[y:y+box_size, x:x+box_size]
+        face_gray = cv2.resize(roi_gray, (48,48))
+        face_expanded = np.expand_dims(face_gray/255, axis=2).astype('float32')
+        # Load the TFLite model and allocate tensors.
+
+        interpreter.set_tensor(input_details[0]['index'], [face_expanded])
+        interpreter.invoke()
+
+        # The function `get_tensor()` returns a copy of the tensor data.
+        # Use `tensor()` in order to get a pointer to the tensor.
+        output_data = interpreter.get_tensor(output_details[0]['index'])
+        confidence = np.max(output_data[0]) * 100
+        emo_state = np.where(output_data[0] == np.max(output_data[0]))[0][0]
+        multi_eomtion_counter.append(emo_state)
+        txt = str(mapper[emo_state])+"(%.02f%%)" % confidence
+        cv2.putText(frame,txt, (x , y-10), font, 0.4, (255, 255, 0), 1, cv2.LINE_AA)
+    
+    # t2 = cv2.getTickCount()
+    # time1 = (t2 - t1) / freq
+    # frame_rate_calc = 1 / time1
