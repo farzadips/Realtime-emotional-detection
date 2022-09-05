@@ -178,3 +178,30 @@ for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port
         frame_rate_calc = 1/(time.time() - start_time) -15
         three_face_fps.append(frame_rate_calc)
         three_face = True
+    if(one_face):
+        txt = "1 face FPS AVG: {0:.2f}".format(sum(one_face_fps)/len(one_face_fps))
+        cv2.putText(frame,txt, (10, 185), font, 0.3, (255, 255, 0), 1, cv2.LINE_AA)
+    if(two_face):
+        txt = "2 face FPS AVG: {0:.2f}".format(sum(two_face_fps)/len(two_face_fps))
+        cv2.putText(frame,txt, (10, 175), font, 0.3, (255, 255, 0), 1, cv2.LINE_AA)
+    if(three_face):
+        txt = "3 face FPS AVG: {0:.2f}".format(sum(three_face_fps)/len(three_face_fps))
+        cv2.putText(frame,txt, (10, 165), font, 0.3, (255, 255, 0), 1, cv2.LINE_AA)
+    frame_rate_calc = 1/(time.time() - start_time) -15
+    cv2.putText(frame, "FPS: {0:.2f}".format(frame_rate_calc), (10, 12), font, 0.4, (255, 255, 0), 1, cv2.LINE_AA)
+    
+    ims = cv2.resize(frame, (960, 540))  
+    cv2.imshow('Emotion detector', ims)
+
+
+
+    # Press 'q' to quit
+    
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+    rawCapture.truncate(0)
+
+camera.close()
+test.end()
+cv2.destroyAllWindows()
