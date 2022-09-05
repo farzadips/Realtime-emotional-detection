@@ -104,3 +104,77 @@ for frame1 in camera.capture_continuous(rawCapture, format="bgr", use_video_port
     # t2 = cv2.getTickCount()
     # time1 = (t2 - t1) / freq
     # frame_rate_calc = 1 / time1
+    if(count == 1):
+        if(emo_state == previous_state):
+            if(state_counter<15):
+                state_counter+=1
+        else:
+            state_counter = 0
+            one_time_sender = True
+        if(state_counter > 10 and one_time_sender):
+
+            one_time_sender = False
+            now = datetime.now()
+            datetime_str = str(now.strftime('%d-%m-%y %H:%M:%S'))
+            if(emo_state != fixed_previous):
+                body = {
+                        "bpip3 install paho-mqtt python-etcdn": "http://192.168.1.9/",
+                        "bt": datetime_str,
+                        "e": mapper[emo_state]
+                }
+                body_json = json.dumps(body)
+                test.myMqttClient.myPublish("/206803/emotion", body_json)
+                fixed_previous = emo_state
+
+        if(len(one_face_fps) > 100):
+            one_face_fps = one_face_fps[1:]
+        frame_rate_calc = 1/(time.time() - start_time) -15
+        one_face_fps.append(frame_rate_calc)
+        one_face = True
+        previous_state = emo_state
+    elif(count == 2):
+        multi_counter +=1
+        if(time.time()-multi_time >5 and multi_counter>15):
+            multi_counter = 0
+            multi_time = time.time()
+            first_emo = mapper[multi_eomtion_counter[-1:][0]]
+            second_emo = mapper[multi_eomtion_counter[-2:-1][0]]
+            multi_eomtion_counter = []
+            now = datetime.now()
+            datetime_str = str(now.strftime('%d-%m-%y %H:%M:%S'))
+            body = {
+                    "bn": "http://192.168.1.9/",
+                    "bt": datetime_str,
+                    "fe": first_emo,
+                    "se": second_emo
+            }
+            body_json = json.dumps(body)
+            test.myMqttClient.myPublish("/206803/multi_emotion", body_json)
+        if(len(two_face_fps) > 100):
+            two_face_fps = two_face_fps[1:]
+        frame_rate_calc = 1/(time.time() - start_time) -15
+        two_face_fps.append(frame_rate_calc)
+        two_face = True
+    elif(count == 3):
+        if(time.time()-multi_time >5):
+            multi_time = time.time()
+            first_emo = mapper[multi_eomtion_counter[-1:][0]]
+            second_emo = mapper[multi_eomtion_counter[-2:-1][0]]
+            third_emo = mapper[multi_eomtion_counter[-3:-2][0]]
+            multi_eomtion_counter = []
+            now = datetime.now()
+            datetime_str = str(now.strftime('%d-%m-%y %H:%M:%S'))
+            body = {
+                    "bn": "http://192.168.1.9/",
+                    "bt": datetime_str,
+                    "fe": first_emo,
+                    "se": second_emo,
+                    "te": third_emo
+            }
+            body_json = json.dumps(body)
+            test.myMqttClient.myPublish("/206803/multi_emotion", body_json)
+        if(len(three_face_fps) > 100):
+            three_face_fps = three_face_fps[1:]
+        frame_rate_calc = 1/(time.time() - start_time) -15
+        three_face_fps.append(frame_rate_calc)
+        three_face = True
